@@ -129,40 +129,45 @@ function App() {
         
         {/* Left Sidebar for Statistics */}
         {gameMode === 'poker' && handStats && opStats && (
-          <aside className="glass-panel sidebar" style={{ overflowY: 'auto', minWidth: '320px' }}>
+          <aside className="glass-panel sidebar" style={{ overflowY: 'auto', minWidth: '450px', flexShrink: 0 }}>
             <h2 style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1rem', color: 'var(--accent-gold)' }}>
               Statistics
             </h2>
 
-            <div className="control-group" style={{ marginTop: '1rem' }}>
-              <label style={{ color: 'var(--text-main)', fontSize: '1.1rem', marginBottom: '0.5rem', display: 'block' }}>Hero Hands</label>
-              <div className="points-list">
-                {Object.entries(handStats).map(([rank, pct]) => (
-                  <div key={`hero-${rank}`} className="point-item" style={{ padding: '0.4rem', fontSize: '0.85rem' }}>
-                    <span>{rank}</span>
-                    <span className="score" style={{ color: pct > 10 ? '#4ade80' : 'var(--text-muted)' }}>{pct}%</span>
-                  </div>
-                ))}
+            <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+              <div className="control-group" style={{ flex: 1 }}>
+                <label style={{ color: 'var(--text-main)', fontSize: '1.1rem', marginBottom: '0.5rem', display: 'block' }}>Hero</label>
+                <div className="points-list">
+                  {Object.entries(handStats).map(([rank, pct]) => (
+                    <div key={`hero-${rank}`} className="point-item" style={{ padding: '0.4rem', fontSize: '0.85rem' }}>
+                      <span>{rank}</span>
+                      <span className="score" style={{ color: pct > 10 ? '#4ade80' : 'var(--text-muted)' }}>{pct}%</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            <div className="control-group" style={{ marginTop: '1.5rem' }}>
-              <label style={{ color: 'var(--text-main)', fontSize: '1.1rem', marginBottom: '0.5rem', display: 'block' }}>Opponents Best Hand</label>
-              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Chance that AT LEAST ONE opponent gets this hand.</p>
-              <div className="points-list">
-                {Object.entries(opStats).map(([rank, pct]) => (
-                  <div key={`op-${rank}`} className="point-item" style={{ padding: '0.4rem', fontSize: '0.85rem' }}>
-                    <span>{rank}</span>
-                    <span className="score" style={{ color: pct > 10 ? '#f87171' : 'var(--text-muted)' }}>{pct}%</span>
-                  </div>
-                ))}
+              <div className="control-group" style={{ flex: 1 }}>
+                <label style={{ color: 'var(--text-main)', fontSize: '1.1rem', marginBottom: '0.5rem', display: 'block' }}>Opponents</label>
+                <div className="points-list">
+                  {Object.entries(opStats).map(([rank, pct]) => (
+                    <div key={`op-${rank}`} className="point-item" style={{ padding: '0.4rem', fontSize: '0.85rem' }}>
+                      <span>{rank}</span>
+                      <span className="score" style={{ color: pct > 10 ? '#f87171' : 'var(--text-muted)' }}>{pct}%</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
+            
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '1rem', textAlign: 'center' }}>
+              Opponents column shows the chance that AT LEAST ONE opponent gets this hand.
+            </p>
           </aside>
         )}
 
         {/* Main Play Area */}
-        <div style={{ flexGrow: 1, display: 'flex', justifyContent: 'center' }}>
+        <div style={{ flexGrow: 1, display: 'flex', justifyContent: 'center', minWidth: '800px' }}>
           {gameMode === 'poker' ? (
             <PokerTable 
               playerCount={playerCount}
@@ -177,7 +182,7 @@ function App() {
         </div>
 
         {/* Right Sidebar for Controls */}
-        <aside className="glass-panel sidebar" style={{ overflowY: 'auto', minWidth: '260px' }}>
+        <aside className="glass-panel sidebar" style={{ overflowY: 'auto', minWidth: '260px', flexShrink: 0 }}>
           <h2 style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1rem' }}>
             <Settings size={20} style={{ display: 'inline', marginRight: '0.5rem', verticalAlign: 'middle' }} />
             Controls
