@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import PlayingCard from './PlayingCard';
 import CardSelector from './CardSelector';
-import { evaluateCallbreakBid } from '../utils';
+import { evaluateCallbreakBid, SUITS, RANKS } from '../utils';
 
 const GameCallbreak = () => {
   const [myCards, setMyCards] = useState(Array.from({ length: 13 }, () => null));
@@ -32,6 +32,48 @@ const GameCallbreak = () => {
     setAnalysis(null);
   };
 
+  const randomizeHand = () => {
+    const deck = [];
+    SUITS.forEach(suit => {
+      RANKS.forEach(rank => {
+        deck.push({ suit, rank });
+      });
+    });
+    
+    // Shuffle
+    for (let i = deck.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [deck[i], deck[j]] = [deck[j], deck[i]];
+    }
+
+    setMyCards(deck.slice(0, 13));
+  };
+
+  const addRandomCard = () => {
+    const emptyIdx = myCards.findIndex(c => c === null);
+    if (emptyIdx === -1) return; // Hand is full
+
+    const deck = [];
+    SUITS.forEach(suit => {
+      RANKS.forEach(rank => {
+        deck.push({ suit, rank });
+      });
+    });
+
+    const usedCardStrs = myCards.filter(c => c !== null).map(c => `${c.rank}${c.suit}`);
+    const availableCards = deck.filter(c => !usedCardStrs.includes(`${c.rank}${c.suit}`));
+
+    if (availableCards.length === 0) return;
+
+    const randomCard = availableCards[Math.floor(Math.random() * availableCards.length)];
+
+    setMyCards(prev => {
+      const next = [...prev];
+      next[emptyIdx] = randomCard;
+      return next;
+    });
+  };
+
   const usedCards = myCards.filter(c => c !== null);
 
   return (
@@ -54,9 +96,17 @@ const GameCallbreak = () => {
           ))}
         </div>
 
-        <button className="btn-primary" onClick={clearCards} style={{ background: 'rgba(255,255,255,0.1)' }}>
-          Clear Hand
-        </button>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
+          <button className="btn-primary" onClick={addRandomCard} style={{ background: 'var(--accent-gold)', color: 'black' }}>
+            + Random Card
+          </button>
+          <button className="btn-primary" onClick={randomizeHand} style={{ background: 'var(--accent-gold)', color: 'black' }}>
+            Randomize Hand
+          </button>
+          <button className="btn-primary" onClick={clearCards} style={{ background: 'rgba(255,255,255,0.1)' }}>
+            Clear Hand
+          </button>
+        </div>
       </div>
 
       {analysis && (
@@ -95,13 +145,31 @@ const GameCallbreak = () => {
 
           </div>
 
-          <div style={{ marginTop: '2rem', background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '8px', textAlign: 'center' }}>
-            <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Confidence Score</div>
-            <div style={{ fontSize: '1.5rem', color: analysis.confidence >= 80 ? '#4ade80' : analysis.confidence >= 60 ? '#facc15' : '#f87171' }}>
-              {analysis.confidence}%
+          <div style={{ marginTop: '2rem', display: 'flex', gap: '2rem' }}>
+            <div style={{ flex: 1, background: 'rgba(0,0,0,0.3)', padding: '1.5rem', borderRadius: '8px', textAlign: 'center' }}>
+              <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>Confidence Score</div>
+              <div style={{ fontSize: '2rem', color: analysis.confidence >= 80 ? '#4ade80' : analysis.confidence >= 60 ? '#facc15' : '#f87171' }}>
+                {analysis.confidence}%
+              </div>
+              <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', marginTop: '0.5rem', overflow: 'hidden' }}>
+                <div style={{ width: `${analysis.confidence}%`, height: '100%', background: analysis.confidence >= 80 ? '#4ade80' : analysis.confidence >= 60 ? '#facc15' : '#f87171', transition: 'width 1s ease-out' }}></div>
+              </div>
             </div>
-            <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', marginTop: '0.5rem', overflow: 'hidden' }}>
-              <div style={{ width: `${analysis.confidence}%`, height: '100%', background: analysis.confidence >= 80 ? '#4ade80' : analysis.confidence >= 60 ? '#facc15' : '#f87171', transition: 'width 1s ease-out' }}></div>
+
+            <div style={{ flex: 1, background: 'rgba(255,255,255,0.05)', padding: '1.5rem', borderRadius: '8px' }}>
+              <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '1px', textAlign: 'center' }}>Bid Chances</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {analysis.bidProbabilities.map((b) => (
+                  <div key={b.level} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '1rem', fontWeight: b.level === analysis.bid ? 'bold' : 'normal', color: b.level === analysis.bid ? 'var(--accent-gold)' : 'white' }}>
+                      Bid {b.level}
+                    </span>
+                    <span style={{ fontSize: '1rem', color: b.chance >= 80 ? '#4ade80' : b.chance >= 50 ? '#facc15' : '#f87171' }}>
+                      {b.chance}%
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>

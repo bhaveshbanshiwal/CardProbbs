@@ -9,7 +9,7 @@ import { runMonteCarloSimulation } from './utils';
 function App() {
   const [gameMode, setGameMode] = useState('poker'); // 'poker', '250', or 'callbreak'
   const [playerCount, setPlayerCount] = useState(2);
-  
+
   // Poker State
   const [boardCards, setBoardCards] = useState([null, null, null, null, null]);
   // Player cards: array of arrays. e.g. [[card1, card2], [card1, card2]]
@@ -19,7 +19,7 @@ function App() {
   const [equities, setEquities] = useState({});
   const [handStats, setHandStats] = useState(null);
   const [opStats, setOpStats] = useState(null);
-  
+
   // Modal State
   const [selectorTarget, setSelectorTarget] = useState(null);
 
@@ -109,21 +109,21 @@ function App() {
           <h1 className="title-glow" style={{ margin: 0 }}>CardProbbs</h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Advanced Probability Calculator</p>
         </div>
-        
+
         <div className="mode-switch">
-          <button 
+          <button
             className={`mode-btn ${gameMode === 'poker' ? 'active' : ''}`}
             onClick={() => handleModeSwitch('poker')}
           >
             Texas Hold'em
           </button>
-          <button 
+          <button
             className={`mode-btn ${gameMode === '250' ? 'active' : ''}`}
             onClick={() => handleModeSwitch('250')}
           >
             250 Game
           </button>
-          <button 
+          <button
             className={`mode-btn ${gameMode === 'callbreak' ? 'active' : ''}`}
             onClick={() => handleModeSwitch('callbreak')}
           >
@@ -133,7 +133,7 @@ function App() {
       </header>
 
       <main className="main-content" style={{ display: 'flex', gap: '2rem', justifyContent: 'center' }}>
-        
+
         {/* Left Sidebar for Statistics */}
         {gameMode === 'poker' && handStats && opStats && (
           <aside className="glass-panel sidebar" style={{ overflowY: 'auto', minWidth: '450px', flexShrink: 0 }}>
@@ -166,7 +166,7 @@ function App() {
                 </div>
               </div>
             </div>
-            
+
             <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '1rem', textAlign: 'center' }}>
               Opponents column shows the chance that AT LEAST ONE opponent gets this hand.
             </p>
@@ -176,7 +176,7 @@ function App() {
         {/* Main Play Area */}
         <div style={{ flexGrow: 1, display: 'flex', justifyContent: 'center', minWidth: '800px' }}>
           {gameMode === 'poker' && (
-            <PokerTable 
+            <PokerTable
               playerCount={playerCount}
               playerCards={playerCards}
               boardCards={boardCards}
@@ -216,7 +216,7 @@ function App() {
       </main>
 
       {selectorTarget && (
-        <CardSelector 
+        <CardSelector
           onSelect={handleCardSelect}
           onClose={() => setSelectorTarget(null)}
           usedCards={usedCards}

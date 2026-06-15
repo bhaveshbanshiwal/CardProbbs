@@ -349,12 +349,32 @@ export const evaluate250Bid = (cards) => {
   let confidence = 65 + (diff * 1.5);
   confidence = Math.min(99, Math.max(20, confidence));
 
+  // Generate probabilities for bids around the recommended bid
+  const bidProbabilities = [];
+  const startBid = Math.max(150, recommendedBid - 15);
+  const endBid = Math.min(250, recommendedBid + 25);
+  
+  for (let b = startBid; b <= endBid; b += 5) {
+    let bDiff = expectedScore - b;
+    let bConf = 65 + (bDiff * 1.5);
+    
+    // Lower bids are overwhelmingly likely if our expected score is high
+    if (bConf > 99) bConf = 99;
+    if (bConf < 1) bConf = 1;
+
+    bidProbabilities.push({
+      level: b,
+      chance: Math.round(bConf)
+    });
+  }
+
   return {
     bid: recommendedBid,
     trump: bestTrump,
     confidence: Math.round(confidence),
     pointsInHand,
-    friends: recommendedFriends
+    friends: recommendedFriends,
+    bidProbabilities
   };
 };
 
@@ -430,11 +450,25 @@ export const evaluateCallbreakBid = (cards) => {
   // You must bid at least 1 in Callbreak usually, but let's constrain between 1 and 13.
   recommendedBid = Math.max(1, Math.min(13, recommendedBid));
   
-  // Calculate confidence. If totalCalculated is 4.6 and bid is 4, we are very confident.
-  // If totalCalculated is 3.5 and bid is 4, we are less confident.
+  // Calculate confidence for recommended bid
   let diff = totalCalculated - recommendedBid;
   let confidence = 75 + (diff * 20); // 0 diff = 75%. +0.5 diff = 85%. -0.5 diff = 65%
   confidence = Math.max(10, Math.min(99, confidence));
+
+  // Generate probabilities for bids from 1 to recommendedBid + 2
+  const maxBidToTrack = Math.min(13, recommendedBid + 2);
+  const bidProbabilities = [];
+  
+  for (let b = 1; b <= maxBidToTrack; b++) {
+    let bDiff = totalCalculated - b;
+    let bConf = 75 + (bDiff * 20);
+    // If we have to bid 1 and we expect 5 tricks, chance of making 1 is practically 99%
+    bConf = Math.max(1, Math.min(99, bConf));
+    bidProbabilities.push({
+      level: b,
+      chance: Math.round(bConf)
+    });
+  }
 
   return {
     bid: recommendedBid,
@@ -444,6 +478,7 @@ export const evaluateCallbreakBid = (cards) => {
       offsuit: offsuitTricks.toFixed(1),
       ruffing: ruffingTricks.toFixed(1),
       total: totalCalculated.toFixed(2)
-    }
+    },
+    bidProbabilities
   };
 };
