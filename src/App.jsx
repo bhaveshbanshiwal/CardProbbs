@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Settings, RefreshCcw, Info } from 'lucide-react';
 import PokerTable from './components/PokerTable';
 import Game250 from './components/Game250';
+import GameCallbreak from './components/GameCallbreak';
 import CardSelector from './components/CardSelector';
 import { runMonteCarloSimulation } from './utils';
 
 function App() {
-  const [gameMode, setGameMode] = useState('poker'); // 'poker' or '250'
+  const [gameMode, setGameMode] = useState('poker'); // 'poker', '250', or 'callbreak'
   const [playerCount, setPlayerCount] = useState(2);
   
   // Poker State
@@ -122,6 +123,12 @@ function App() {
           >
             250 Game
           </button>
+          <button 
+            className={`mode-btn ${gameMode === 'callbreak' ? 'active' : ''}`}
+            onClick={() => handleModeSwitch('callbreak')}
+          >
+            Callbreak
+          </button>
         </div>
       </header>
 
@@ -168,7 +175,7 @@ function App() {
 
         {/* Main Play Area */}
         <div style={{ flexGrow: 1, display: 'flex', justifyContent: 'center', minWidth: '800px' }}>
-          {gameMode === 'poker' ? (
+          {gameMode === 'poker' && (
             <PokerTable 
               playerCount={playerCount}
               playerCards={playerCards}
@@ -176,9 +183,9 @@ function App() {
               equities={equities}
               onCardClick={openSelector}
             />
-          ) : (
-            <Game250 />
           )}
+          {gameMode === '250' && <Game250 />}
+          {gameMode === 'callbreak' && <GameCallbreak />}
         </div>
 
         {/* Right Sidebar for Controls */}

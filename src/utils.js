@@ -357,3 +357,93 @@ export const evaluate250Bid = (cards) => {
     friends: recommendedFriends
   };
 };
+
+export const evaluateCallbreakBid = (cards) => {
+  const validCards = cards.filter(c => c !== null);
+  if (validCards.length < 13) return null;
+
+  const suitCounts = { hearts: 0, diamonds: 0, clubs: 0, spades: 0 };
+  const suitRanks = { hearts: [], diamonds: [], clubs: [], spades: [] };
+
+  validCards.forEach(c => {
+    suitCounts[c.suit]++;
+    suitRanks[c.suit].push(c.rank);
+  });
+
+  const hasCard = (suit, rank) => suitRanks[suit].includes(rank);
+
+  let expectedTricks = 0;
+  let spadeTricks = 0;
+  let offsuitTricks = 0;
+  let ruffingTricks = 0;
+
+  // 1. Evaluate Spades (Trump)
+  const numSpades = suitCounts.spades;
+  if (hasCard('spades', 'A')) spadeTricks += 1;
+  if (hasCard('spades', 'K')) spadeTricks += 0.9;
+  if (hasCard('spades', 'Q')) spadeTricks += 0.8;
+  if (hasCard('spades', 'J')) spadeTricks += 0.5;
+  if (hasCard('spades', 'T')) spadeTricks += 0.3;
+
+  // Extra spades generally win tricks late in the game
+  if (numSpades > 4) {
+    spadeTricks += (numSpades - 4) * 0.5;
+  }
+
+  // 2. Evaluate Off-suits
+  const offsuits = ['hearts', 'diamonds', 'clubs'];
+  offsuits.forEach(suit => {
+    const numCards = suitCounts[suit];
+    
+    // High cards
+    if (hasCard(suit, 'A')) {
+      offsuitTricks += 1;
+      if (hasCard(suit, 'K')) offsuitTricks += 1;
+      else if (hasCard(suit, 'Q') && numCards >= 3) offsuitTricks += 0.5;
+    } else {
+      // If we don't have the Ace, the King might be caught, unless the suit is long or very short
+      if (hasCard(suit, 'K')) {
+        offsuitTricks += 0.5; // 50% chance it survives
+      }
+      if (hasCard(suit, 'Q') && numCards >= 3) {
+        offsuitTricks += 0.2;
+      }
+    }
+
+    // Ruffing Potential: If we are short in a suit, our small spades become very powerful
+    if (numCards === 0 && numSpades >= 3) {
+      ruffingTricks += 1.5; // Void suit is highly valuable
+    } else if (numCards === 1 && numSpades >= 4) {
+      ruffingTricks += 1;   // Singleton is moderately valuable
+    }
+  });
+
+  // Cap ruffing tricks to available spades
+  // If we already counted high spades as spadeTricks, only small spades are used for ruffing.
+  // We approximate this by limiting total expected tricks to total spades + offsuit winners.
+  let totalCalculated = spadeTricks + offsuitTricks + ruffingTricks;
+  
+  // A standard hand wins ~3.25 tricks (13 / 4). 
+  // Let's create a realistic bid.
+  let recommendedBid = Math.round(totalCalculated);
+  
+  // You must bid at least 1 in Callbreak usually, but let's constrain between 1 and 13.
+  recommendedBid = Math.max(1, Math.min(13, recommendedBid));
+  
+  // Calculate confidence. If totalCalculated is 4.6 and bid is 4, we are very confident.
+  // If totalCalculated is 3.5 and bid is 4, we are less confident.
+  let diff = totalCalculated - recommendedBid;
+  let confidence = 75 + (diff * 20); // 0 diff = 75%. +0.5 diff = 85%. -0.5 diff = 65%
+  confidence = Math.max(10, Math.min(99, confidence));
+
+  return {
+    bid: recommendedBid,
+    confidence: Math.round(confidence),
+    breakdown: {
+      spades: spadeTricks.toFixed(1),
+      offsuit: offsuitTricks.toFixed(1),
+      ruffing: ruffingTricks.toFixed(1),
+      total: totalCalculated.toFixed(2)
+    }
+  };
+};
